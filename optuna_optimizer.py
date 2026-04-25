@@ -103,7 +103,7 @@ def objective(trial):
         'proximity_thresh': trial.suggest_float('proximity_thresh', 0.60, 0.96, step=0.05)
     }
 
-    print(f"\n=============================================")
+    print(f"\n==============================================")
     print(f"[*] Trial {trial.number} | Testing Optuna Params: {params}")
 
     video = "MOT17-04-SDP-raw.webm"
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     print("[*] Starting Bayesian Optimization Sequence...")
     study.optimize(objective, n_trials=80)
 
-    print("\n=============================================")
+    print("\n==============================================")
     print("[+] BAYESIAN OPTIMIZATION COMPLETE!")
     print(f"[!] ABSOLUTE BEST SCORE (MOTA): {study.best_value}")
     print(f"[!] OPTIMAL MATHEMATICAL PARAMETERS:")

@@ -4,7 +4,7 @@ An edge-optimized, real-time Multi-Object Tracking (MOT) pipeline designed to ac
 
 ## Overview
 
-End-to-end tracking transformers (such as MeMOT) achieve high accuracy but require massive computational clusters (e.g., 8x Tesla A100 GPUs) and uncompressed, lossless 1080p imagery to function effectively. 
+End-to-end tracking transformers (such as MeMOT) achieve high accuracy but require massive computational clusters (e.g., 8x Tesla A100 GPUs) and uncompressed, lossless 1080p imagery to function efficiently. This is impractical for edge devices and consumer hardware.
 
 **Edge-MOT** proposes a highly efficient, decoupled architecture:
 1. **Spatial Detection:** Utilizes **RT-DETR** (Real-Time DEtection TRansformer) for rapid, accurate bounding box generation.
@@ -29,16 +29,18 @@ Evaluated on the heavily compressed `MOT17-04` sequence, this pipeline was mathe
 
 To overcome the inherent data loss in compressed video formats, this repository includes an automated hyperparameter tuning engine.
 
-* **`auto_optimizer.py`**: Executes an exhaustive Grid Search/Random Search across the Re-ID memory bank constraints.
-* **`finetune_optimizer.py`**: Utilizes **Optuna** (Tree-structured Parzen Estimator) to perform Bayesian Optimization. It mathematically maps the search space, creates a region of interest around the top-performing trials, and automatically anneals the confidence, proximity, and matching thresholds to extract the maximum possible MOTA score.
+* **`optuna_optimizer.py`**: Executes an exhaustive Bayesian Optimization across the Re-ID memory bank constraints using Optuna's Tree-structured Parzen Estimator.
+* **`finetune_optimizer.py`**: Utilizes historical trial data to mathematically map the search space and create a region of interest around the top 20 performers. This enables micro-targeted refinement with 2.5x more trials in a smaller search space.
 
 ## Installation & Usage
 
 **1. Install Dependencies**
 ```bash
 pip install ultralytics boxmot torch torchvision optuna opencv-python
+```
 
-2. Run
+**2. Run Tracking**
+```bash
 # Run on a local video file
 python tracker.py --vid path/to/video.mp4 --reid osnet_ain_x1_0_msmt17.pt
 
@@ -47,7 +49,10 @@ python tracker.py --imgdir path/to/MOT17-04/img1 --reid osnet_ain_x1_0_msmt17.pt
 
 # Run live screen capture
 python tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
+```
 
-3. Optimization
+**3. Optimization**
+```bash
 python optuna_optimizer.py
 python finetune_optimizer.py
+```

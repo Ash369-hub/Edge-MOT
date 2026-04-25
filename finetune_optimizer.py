@@ -115,7 +115,7 @@ def finetune_objective(trial):
     for key, (min_val, max_val) in optimal_bounds.items():
         params[key] = trial.suggest_float(key, min_val, max_val)
 
-    print(f"\n=============================================")
+    print(f"\n==============================================")
     print(f"[*] Fine-Tune Trial {trial.number} | Params: {params}")
 
     run_tracking_iteration(global_model, "MOT17-04-SDP-raw.webm", "osnet_ain_x1_0_msmt17.pt", params)
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     print("\n[*] Starting Micro-Targeted Fine-Tuning Sequence...")
     finetune_study.optimize(finetune_objective, n_trials=200)
 
-    print("\n=============================================")
+    print("\n==============================================")
     print("[+] FINE-TUNING COMPLETE!")
     print(f"[!] ABSOLUTE BEST SCORE (MOTA): {finetune_study.best_value}")
     for key, value in finetune_study.best_params.items():
