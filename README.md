@@ -40,13 +40,13 @@ pip install ultralytics boxmot torch torchvision optuna opencv-python
 
 2. Run
 # Run on a local video file
-python master_tracker.py --vid path/to/video.mp4 --reid osnet_ain_x1_0_msmt17.pt
+python tracker.py --vid path/to/video.mp4 --reid osnet_ain_x1_0_msmt17.pt
 
 # Run on an official MOT image sequence
-python master_tracker.py --imgdir path/to/MOT17-04/img1 --reid osnet_ain_x1_0_msmt17.pt
+python tracker.py --imgdir path/to/MOT17-04/img1 --reid osnet_ain_x1_0_msmt17.pt
 
 # Run live screen capture
-python master_tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
+python tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
 
 3. Optimization
 python optuna_optimizer.py
