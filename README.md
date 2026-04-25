@@ -1,4 +1,4 @@
-# Edge-MOT: Decoupled Zero-Shot Tracking
+# Edge-MOT: Decoupled Tracking
 
 An edge-optimized, real-time Multi-Object Tracking (MOT) pipeline designed to achieve State-of-the-Art (SOTA) tracking metrics on heavily compressed streaming video using consumer-grade hardware.
 
@@ -10,7 +10,7 @@ End-to-end tracking transformers (such as MeMOT) achieve high accuracy but requi
 1. **Spatial Detection:** Utilizes **RT-DETR** (Real-Time DEtection TRansformer) for rapid, accurate bounding box generation.
 2. **Temporal Memory:** Employs **BoxMOT (BoTSORT)** paired with an Attention-In-Network Re-ID model (**OSNet-AIN**) to maintain identity tracking through severe occlusion and lighting changes.
 
-By decoupling these processes, this pipeline runs in real-time on a single consumer GPU (NVIDIA RTX 4060) completely zero-shot, without requiring fine-tuning on the target dataset.
+By decoupling these processes, this pipeline runs in real-time on a single consumer GPU (NVIDIA RTX 4060) without requiring any dataset-specific fine-tuning or prior training on the target footage.
 
 ## 📊 Benchmark Results
 
@@ -23,7 +23,7 @@ Evaluated on the heavily compressed `MOT17-04` sequence, this pipeline was mathe
 | **IDsw** | `82` | Identity Switches (96% reduction compared to MeMOT's 2,724) |
 | **CLR_TP**| `27,151` | True Positives |
 
-*Note: Achieving >50 MOTA and >59 IDF1 zero-shot on a degraded `.webm` video represents a significant leap in practical, real-world edge tracking stability.*
+*Note: Achieving >50 MOTA and >59 IDF1 out-of-the-box on a degraded `.webm` video represents a significant leap in practical edge-tracking stability.*
 
 ## Bayesian Hyperparameter Optimization
 
