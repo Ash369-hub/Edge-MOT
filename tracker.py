@@ -63,7 +63,7 @@ def run_image_sequence(img_folder, weights, reid_weights):
     scale_w = 1920.0 / width
     scale_h = 1080.0 / height
 
-    os.makedirs("results", exist_ok=True)
+    os.makedirs("results/images", exist_ok=True)
     mot_file_path = os.path.join("results", "mot_benchmark.txt")
     mot_file = open(mot_file_path, "w")
 
@@ -74,9 +74,14 @@ def run_image_sequence(img_folder, weights, reid_weights):
         frame = cv2.imread(img_path)
         frame_count += 1
         
-        results = model(frame, conf=0.06784364415499451, imgsz=1088, classes=[0], verbose=False)
+        results = model(frame, conf=0.05, imgsz=1088, classes=[0], verbose=False)
         dets = extract_detections(results)
         tracks = tracker.update(dets, frame)
+        
+        annotated_frame = draw_tracks(frame.copy(), tracks)
+        
+        out_img_path = os.path.join("results", "images", f"tracked_{frame_count:04d}.jpg")
+        cv2.imwrite(out_img_path, annotated_frame)
         
         for track in tracks:
             x1, y1, x2, y2, track_id, conf, cls, ind = track
@@ -91,7 +96,8 @@ def run_image_sequence(img_folder, weights, reid_weights):
             print(f"[*] Processed {frame_count} frames - FPS: {frame_count / (time.time() - start_time):.1f}")
 
     mot_file.close()
-    print(f"\n[+] Sequence processing complete! Saved to: {mot_file_path}")
+    print(f"\n[+] Sequence processing complete! Text saved to: {mot_file_path}")
+    print(f"[+] Annotated images saved to: results/images/")
 
 
 def run_video_file(source_video, weights, reid_weights):
