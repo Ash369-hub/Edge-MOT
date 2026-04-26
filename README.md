@@ -36,7 +36,7 @@ To overcome the inherent data loss in compressed video formats, this repository 
 
 **1. Install Dependencies**
 ```bash
-pip install ultralytics boxmot torch torchvision optuna opencv-python
+pip install ultralytics boxmot==10.0.84 torch torchvision optuna opencv-python
 ```
 
 **2. Run Tracking**
