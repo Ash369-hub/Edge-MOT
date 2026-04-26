@@ -56,3 +56,5 @@ python tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
 python optuna_optimizer.py
 python finetune_optimizer.py
 ```
+
+![Pedestrian Tracking Plot](pedestrian_plot.png)
