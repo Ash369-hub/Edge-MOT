@@ -1,4 +1,5 @@
 # Edge-MOT: Decoupled Tracking
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ash369-hub/Edge-MOT/blob/main/Edge-MOT.ipynb)
 
 An edge-optimized, real-time Multi-Object Tracking (MOT) pipeline designed to achieve State-of-the-Art (SOTA) tracking metrics on heavily compressed streaming video using consumer-grade hardware.
 
