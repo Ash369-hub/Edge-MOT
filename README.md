@@ -36,7 +36,7 @@ To overcome the inherent data loss in compressed video formats, this repository 
 
 **1. Install Dependencies**
 ```bash
-pip install ultralytics boxmot==10.0.84 torch torchvision optuna opencv-python
+pip install ultralytics boxmot==10.0.84 torch torchvision optuna opencv-python pycocotools matplotlib scikit-image pytest Pillow tqdm tabulate scipy numpy
 ```
 
 **2. Run Tracking**
@@ -55,6 +55,17 @@ python tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
 ```bash
 python optuna_optimizer.py
 python finetune_optimizer.py
+```
+
+**4. copy text file for save results in MOT Challenge format**
+
+```bash
+copy /Y results\mot_benchmark.txt TrackEval\data\trackers\mot_challenge\MOT17-train\your_dir\data\MOT17-04-FRCNN.txt
+```
+
+**5. Evaluate & Benchmark**
+```bash
+!python scripts/run_mot_challenge.py --BENCHMARK MOT17 --SPLIT_TO_EVAL train --TRACKERS_TO_EVAL L-MAT --METRICS HOTA CLEAR Identity --USE_PARALLEL False --NUM_PARALLEL_CORES 1 --SEQ_INFO MOT17-04-FRCNN
 ```
 
 ![Pedestrian Tracking Plot](pedestrian_plot.png)
