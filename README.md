@@ -60,7 +60,9 @@ python finetune_optimizer.py
 **4. copy text file for save results in MOT Challenge format**
 
 ```bash
-copy /Y results\mot_benchmark.txt TrackEval\data\trackers\mot_challenge\MOT17-train\your_dir\data\MOT17-04-FRCNN.txt
+copy /Y results\mot_benchmark.txt TrackEval\data\trackers\mot_challenge\MOT17-train\L-MAT\data\MOT17-04-FRCNN.txt
+or
+cp -f results/mot_benchmark.txt TrackEval/data/trackers/mot_challenge/MOT17-train/L-MAT/data/MOT17-04-FRCNN.txt
 ```
 
 **5. Evaluate & Benchmark**
