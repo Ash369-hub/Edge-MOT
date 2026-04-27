@@ -67,6 +67,7 @@ cp -f results/mot_benchmark.txt TrackEval/data/trackers/mot_challenge/MOT17-trai
 
 **5. Evaluate & Benchmark**
 ```bash
+cd TrackEval
 python scripts/run_mot_challenge.py --BENCHMARK MOT17 --SPLIT_TO_EVAL train --TRACKERS_TO_EVAL L-MAT --METRICS HOTA CLEAR Identity --USE_PARALLEL False --NUM_PARALLEL_CORES 1 --SEQ_INFO MOT17-04-FRCNN
 ```
 
