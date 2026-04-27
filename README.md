@@ -65,7 +65,7 @@ copy /Y results\mot_benchmark.txt TrackEval\data\trackers\mot_challenge\MOT17-tr
 
 **5. Evaluate & Benchmark**
 ```bash
-!python scripts/run_mot_challenge.py --BENCHMARK MOT17 --SPLIT_TO_EVAL train --TRACKERS_TO_EVAL L-MAT --METRICS HOTA CLEAR Identity --USE_PARALLEL False --NUM_PARALLEL_CORES 1 --SEQ_INFO MOT17-04-FRCNN
+python scripts/run_mot_challenge.py --BENCHMARK MOT17 --SPLIT_TO_EVAL train --TRACKERS_TO_EVAL L-MAT --METRICS HOTA CLEAR Identity --USE_PARALLEL False --NUM_PARALLEL_CORES 1 --SEQ_INFO MOT17-04-FRCNN
 ```
 
 ![Pedestrian Tracking Plot](pedestrian_plot.png)
