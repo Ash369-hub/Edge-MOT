@@ -75,4 +75,4 @@ cd TrackEval
 python scripts/run_mot_challenge.py --BENCHMARK MOT17 --SPLIT_TO_EVAL train --TRACKERS_TO_EVAL L-MAT --METRICS HOTA CLEAR Identity --USE_PARALLEL False --NUM_PARALLEL_CORES 1 --SEQ_INFO MOT17-04-FRCNN
 ```
 
-![Pedestrian Tracking Plot](pedestrian_plot.png)
+![Pedestrian Tracking Plot](pedestrian_plot.png?t=TIMESTAMP)
