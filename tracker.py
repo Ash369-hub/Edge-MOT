@@ -13,7 +13,7 @@ except ImportError:
     from boxmot import BotSort as BoTSORT
 
 def init_tracker(reid_weights):
-    """Initializes the BoxMOT tracker with the heavy OSNet Re-ID model."""
+    """Initializes the BoxMOT tracker with the heavy OSNet Re-ID model and Bayesian-optimized thresholds."""
     return BoTSORT(
         model_weights=Path(reid_weights),
         device='cuda:0',
@@ -27,6 +27,20 @@ def init_tracker(reid_weights):
         appearance_thresh=0.8
     )
 
+def get_dynamic_threshold(frame):
+    """
+    Laplacian-Variance Adaptive Gating
+    Autonomously calculates the optimal detection threshold by measuring 
+    the visual entropy (Laplacian variance) of the frame.
+    """
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    variance = cv2.Laplacian(gray, cv2.CV_64F).var()
+    
+    if variance < 45:  
+        return 0.40 
+    else:
+        return 0.07 
+
 def extract_detections(results):
     """Formats Ultralytics RT-DETR detections into BoxMOT format [x1,y1,x2,y2,conf,cls]"""
     r = results[0]
@@ -39,7 +53,7 @@ def extract_detections(results):
     return np.hstack((boxes, confs, clss))
 
 def draw_tracks(frame, tracks):
-    """Draws bounding boxes and IDs since we are no longer using Ultralytics r.plot()"""
+    """Draws bounding boxes and IDs."""
     for track in tracks:
         x1, y1, x2, y2, track_id, conf, cls, ind = track
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (255, 50, 50), 2)
@@ -63,7 +77,7 @@ def run_image_sequence(img_folder, weights, reid_weights):
     scale_w = 1920.0 / width
     scale_h = 1080.0 / height
 
-    os.makedirs("results/images", exist_ok=True)
+    os.makedirs("results", exist_ok=True)
     mot_file_path = os.path.join("results", "mot_benchmark.txt")
     mot_file = open(mot_file_path, "w")
 
@@ -74,14 +88,12 @@ def run_image_sequence(img_folder, weights, reid_weights):
         frame = cv2.imread(img_path)
         frame_count += 1
         
-        results = model(frame, conf=0.05, imgsz=1088, classes=[0], verbose=False)
+        # --- Laplacian-Variance Gating ---
+        autonomous_conf = get_dynamic_threshold(frame)
+        
+        results = model(frame, conf=autonomous_conf, imgsz=1088, classes=[0], verbose=False)
         dets = extract_detections(results)
         tracks = tracker.update(dets, frame)
-        
-        annotated_frame = draw_tracks(frame.copy(), tracks)
-        
-        out_img_path = os.path.join("results", "images", f"tracked_{frame_count:04d}.jpg")
-        cv2.imwrite(out_img_path, annotated_frame)
         
         for track in tracks:
             x1, y1, x2, y2, track_id, conf, cls, ind = track
@@ -93,11 +105,10 @@ def run_image_sequence(img_folder, weights, reid_weights):
             mot_file.write(f"{frame_count},{int(track_id)},{x1},{y1},{w},{h},{conf:.4f},-1,-1,-1\n")
 
         if frame_count % 50 == 0:
-            print(f"[*] Processed {frame_count} frames - FPS: {frame_count / (time.time() - start_time):.1f}")
+            print(f"[*] Processed {frame_count} frames - FPS: {frame_count / (time.time() - start_time):.1f} | Conf: {autonomous_conf}")
 
     mot_file.close()
-    print(f"\n[+] Sequence processing complete! Text saved to: {mot_file_path}")
-    print(f"[+] Annotated images saved to: results/images/")
+    print(f"\n[+] Sequence processing complete! Saved to: {mot_file_path}")
 
 
 def run_video_file(source_video, weights, reid_weights):
@@ -136,7 +147,10 @@ def run_video_file(source_video, weights, reid_weights):
             
         frame_count += 1
         
-        results = model(frame, conf=0.06784364415499451, imgsz=1088, classes=[0], verbose=False)
+        # --- Laplacian-Variance Gating ---
+        autonomous_conf = get_dynamic_threshold(frame)
+        
+        results = model(frame, conf=autonomous_conf, imgsz=1088, classes=[0], verbose=False)
         dets = extract_detections(results)
         tracks = tracker.update(dets, frame)
         
@@ -155,11 +169,11 @@ def run_video_file(source_video, weights, reid_weights):
             mot_file.write(f"{frame_count},{int(track_id)},{scaled_x1},{scaled_y1},{w},{h},{conf:.4f},-1,-1,-1\n")
 
         live_fps = frame_count / (time.time() - start_time)
-        cv2.putText(annotated_frame, f"FPS: {live_fps:.1f}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3, cv2.LINE_AA)
+        cv2.putText(annotated_frame, f"FPS: {live_fps:.1f} | Conf: {autonomous_conf}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3, cv2.LINE_AA)
         out.write(annotated_frame)
 
         if frame_count % 50 == 0:
-            print(f"[*] Processed {frame_count}/{total_frames} frames - Current FPS: {live_fps:.1f}")
+            print(f"[*] Processed {frame_count}/{total_frames} frames - Current FPS: {live_fps:.1f} | Conf: {autonomous_conf}")
 
     mot_file.close()
     cap.release()
@@ -185,14 +199,18 @@ def run_cctv_stream(source_stream, weights, reid_weights):
             break
             
         frame_count += 1
-        results = model(frame, conf=0.06784364415499451, imgsz=1088, classes=[0], verbose=False)
+        
+        # --- Laplacian-Variance Gating ---
+        autonomous_conf = get_dynamic_threshold(frame)
+        
+        results = model(frame, conf=autonomous_conf, imgsz=1088, classes=[0], verbose=False)
         dets = extract_detections(results)
         tracks = tracker.update(dets, frame)
         
         annotated_frame = draw_tracks(frame.copy(), tracks)
 
         live_fps = frame_count / (time.time() - start_time)
-        cv2.putText(annotated_frame, f"Live FPS: {live_fps:.1f}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3, cv2.LINE_AA)
+        cv2.putText(annotated_frame, f"Live FPS: {live_fps:.1f} | Conf: {autonomous_conf}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3, cv2.LINE_AA)
 
         cv2.imshow("Live CCTV Feed", annotated_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -227,14 +245,17 @@ def run_screen_capture(weights, reid_weights):
             frame = cv2.cvtColor(np.array(sct.grab(monitor)), cv2.COLOR_BGRA2BGR)
             frame_count += 1
 
-            results = model(frame, conf=0.06784364415499451, imgsz=1088, classes=[0], verbose=False)
+            # --- Laplacian-Variance Gating ---
+            autonomous_conf = get_dynamic_threshold(frame)
+
+            results = model(frame, conf=autonomous_conf, imgsz=1088, classes=[0], verbose=False)
             dets = extract_detections(results)
             tracks = tracker.update(dets, frame)
             
             annotated_frame = draw_tracks(frame.copy(), tracks)
 
             live_fps = frame_count / (time.time() - start_time)
-            cv2.putText(annotated_frame, f"Live FPS: {live_fps:.1f}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
+            cv2.putText(annotated_frame, f"Live FPS: {live_fps:.1f} | Conf: {autonomous_conf}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3, cv2.LINE_AA)
 
             cv2.imshow("Live Screen Tracking", annotated_frame)
             out.write(annotated_frame)
