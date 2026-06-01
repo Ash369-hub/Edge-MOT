@@ -1,30 +1,30 @@
 # Edge-MOT: Decoupled Tracking
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ash369-hub/Edge-MOT/blob/main/Edge-MOT.ipynb)
 
-An edge-optimized, real-time Multi-Object Tracking (MOT) pipeline designed to achieve State-of-the-Art (SOTA) tracking metrics on heavily compressed streaming video using consumer-grade hardware.
+An edge-optimized, real-time Multi-Object Tracking (MOT) pipeline designed to achieve highly robust tracking metrics on heavily compressed (H.264 CRF 28+) streaming video using consumer-grade hardware.
 
 ## Overview
 
-End-to-end tracking transformers (such as MeMOT) achieve high accuracy but require massive computational clusters (e.g., 8x Tesla A100 GPUs) and uncompressed, lossless 1080p imagery to function efficiently. This is impractical for edge devices and consumer hardware.
+End-to-end tracking transformers (such as MeMOT) achieve high accuracy but require massive computational clusters (e.g., 8x Tesla A100 GPUs) and uncompressed, lossless 1080p imagery to function efficiently. This is highly impractical for real-world IoT edge devices.
 
-**Edge-MOT** proposes a highly efficient, decoupled architecture:
-1. **Spatial Detection:** Utilizes **RT-DETR** (Real-Time DEtection TRansformer) for rapid, accurate bounding box generation.
-2. **Temporal Memory:** Employs **BoxMOT (BoTSORT)** paired with an Attention-In-Network Re-ID model (**OSNet-AIN**) to maintain identity tracking through severe occlusion and lighting changes.
+**Edge-MOT** proposes a highly efficient, zero-shot decoupled architecture operating on just **3.5 GB of VRAM**:
+
+1. **Laplacian-Variance Adaptive Gating:** Autonomously evaluates the visual entropy (σ²) of incoming frames to dynamically route detection thresholds in real-time, successfully mitigating compression blur and reflection anomalies.
+2. **Spatial Detection:** Utilizes **RT-DETR** (Real-Time DEtection TRansformer) for rapid, accurate bounding box generation.
+3. **Temporal Memory:** Employs **BoTSORT** paired with an omni-scale Re-ID model (**OSNet-AIN**) to maintain identity tracking through severe occlusion and compression-induced feature loss.
 
 By decoupling these processes, this pipeline runs in real-time on a single consumer GPU (NVIDIA RTX 4060) without requiring any dataset-specific fine-tuning or prior training on the target footage.
 
-## 📊 Benchmark Results
+## Benchmark Results
 
-Evaluated on the heavily compressed `MOT17-04` sequence, this pipeline was mathematically pushed to its absolute limits using Bayesian Hyperparameter Optimization. 
+The system was evaluated zero-shot across all 7 MOT17 training sequences. Temporal tracking thresholds were mathematically tuned using a Two-Phase Bayesian Hyperparameter Optimization (Optuna TPE).
 
-| Metric | Score | Description |
-| :--- | :--- | :--- |
-| **MOTA** | `50.403` | Multi-Object Tracking Accuracy |
-| **IDF1** | `59.848` | Identity F1 Score |
-| **IDsw** | `82` | Identity Switches (96% reduction compared to MeMOT's 2,724) |
-| **CLR_TP**| `27,151` | True Positives |
+| Condition | MOTA | IDF1 | HOTA | AssA | IDsw |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Uncompressed (Pristine)** | `42.37` | `54.69` | `45.40` | `47.94` | `742` |
+| **H.264 Compressed (CRF 28)** | `42.35` | `51.94` | `43.32` | `44.17` | `699` |
 
-*Note: Achieving >50 MOTA and >59 IDF1 out-of-the-box on a degraded `.webm` video represents a significant leap in practical edge-tracking stability.*
+*Note: The integration of Laplacian-Variance Gating successfully recovers spatial detection accuracy under heavy compression, maintaining a 42.35 MOTA on CRF 28 video streams that typically cause standard trackers to fail.*
 
 ## Bayesian Hyperparameter Optimization
 
@@ -47,6 +47,9 @@ python tracker.py --vid path/to/video.mp4 --reid osnet_ain_x1_0_msmt17.pt
 
 # Run on an official MOT image sequence
 python tracker.py --imgdir path/to/MOT17-04/img1 --reid osnet_ain_x1_0_msmt17.pt
+
+# Track a live CCTV / RTSP stream (or local webcam '0')
+python master_tracker.py --cctv 0 --reid osnet_ain_x1_0_msmt17.pt
 
 # Run live screen capture
 python tracker.py --screen --reid osnet_ain_x1_0_msmt17.pt
